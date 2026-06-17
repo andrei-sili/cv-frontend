@@ -1,3 +1,5 @@
+import LanguageToggle from "@/components/LanguageToggle";
+
 type Profile = {
   name: string;
   title: string;
@@ -14,23 +16,35 @@ type Project = {
 
 const API = "http://localhost:8080/api";
 
-async function getProfile(): Promise<Profile> {
-  const res = await fetch(`${API}/profile?lang=en`);
+async function getProfile(lang: string): Promise<Profile> {
+  const res = await fetch(`${API}/profile?lang=${lang}`);
   if (!res.ok) throw new Error("Failed to fetch profile");
   return res.json();
 }
 
-async function getProjects(): Promise<Project[]> {
-  const res = await fetch(`${API}/projects?lang=en`);
+async function getProjects(lang: string): Promise<Project[]> {
+  const res = await fetch(`${API}/projects?lang=${lang}`);
   if (!res.ok) throw new Error("Failed to fetch projects");
   return res.json();
 }
 
-export default async function Home() {
-  const [profile, projects] = await Promise.all([getProfile(), getProjects()]);
+export default async function Home({
+  searchParams,
+}: {
+  searchParams: Promise<{ lang?: string }>;
+}) {
+  const { lang = "de" } = await searchParams;
+  const [profile, projects] = await Promise.all([
+    getProfile(lang),
+    getProjects(lang),
+  ]);
 
   return (
     <main className="min-h-screen max-w-3xl mx-auto p-8 flex flex-col gap-10">
+      <div className="flex justify-end">
+        <LanguageToggle current={lang} />
+      </div>
+
       <section className="text-center flex flex-col gap-2">
         <h1 className="text-4xl font-bold">{profile.name}</h1>
         <p className="text-lg text-gray-600">{profile.title}</p>
